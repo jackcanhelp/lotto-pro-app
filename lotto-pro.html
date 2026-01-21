@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能彩券選號系統 Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 12px 30px;
+            border: 2px solid white;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .options {
+            margin-bottom: 20px;
+        }
+
+        .option-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .option-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .must-have-section {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .number-input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .number-checkbox {
+            display: none;
+        }
+
+        .number-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .number-checkbox:checked + .number-label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .number-group {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+            position: relative;
+        }
+
+        .number-ball {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .hot-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            border-radius: 50%;
+            font-size: 0.7em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cold-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 50%;
+            font-size: 0.7em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .group-label {
+            font-weight: 600;
+            color: #666;
+            margin-right: 10px;
+            min-width: 40px;
+        }
+
+        .copy-btn {
+            margin-left: auto;
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .save-btn {
+            position: absolute;
+            right: 60px;
+            padding: 8px 15px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover {
+            background: #229954;
+        }
+
+        .special-ball {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .chart-label {
+            width: 60px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .chart-bar-fill {
+            height: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: white;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .saved-numbers {
+            margin-top: 20px;
+        }
+
+        .saved-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .history-section {
+            margin-top: 30px;
+        }
+
+        .history-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f7f7f7;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .history-date {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .history-numbers {
+            display: flex;
+            gap: 8px;
+        }
+
+        .history-ball {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9em;
+            background: #667eea;
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        /* 迭代4: 進階統計樣式 */
+        .advanced-stats {
+            margin-top: 20px;
+        }
+
+        .stats-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stats-tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .stats-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stats-content {
+            display: none;
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 10px;
+        }
+
+        .stats-content.active {
+            display: block;
+        }
+
+        .sum-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .sum-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .sum-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .range-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 150px;
+            padding: 20px 10px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .range-bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .range-bar {
+            width: 40px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s;
+        }
+
+        .range-label {
+            font-size: 0.75em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .range-count {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .missing-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .missing-table th,
+        .missing-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .missing-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .missing-table tr:hover {
+            background: #f5f5ff;
+        }
+
+        .missing-high {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .missing-low {
+            color: #27ae60;
+        }
+
+        .pair-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .pair-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .pair-nums {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .pair-count {
+            font-size: 0.85em;
+            color: #667eea;
+        }
+
+        /* 迭代5: 匯出按鈕樣式 */
+        .export-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+        }
+
+        .export-btn.secondary {
+            background: #3498db;
+        }
+
+        .export-btn.secondary:hover {
+            background: #2980b9;
+        }
+
+        /* 載入指示器 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 智能彩券選號系統 Pro</h1>
+            <p>運用統計分析 × 智能演算法 × 個人化設定</p>
+        </div>
+
+        <!-- 模式選擇 -->
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="switchMode('lotto')">大樂透 (6/49)</button>
+            <button class="mode-btn" onclick="switchMode('power')">威力彩 (6/38 + 1/8)</button>
+        </div>
+
+        <!-- 統計儀表板 -->
+        <div class="card">
+            <div class="section-title">📊 統計儀表板</div>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-label">已生成組數</div>
+                    <div class="stat-value" id="totalGenerated">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">收藏組數</div>
+                    <div class="stat-value" id="totalSaved">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">當前模式</div>
+                    <div class="stat-value" id="currentMode">大樂透</div>
+                </div>
+            </div>
+
+            <!-- 冷熱號圖表 -->
+            <div class="chart-container">
+                <div style="font-weight: 600; margin-bottom: 10px;">🔥 熱門號碼 TOP 5</div>
+                <div id="hotNumbersChart"></div>
+                <div style="font-weight: 600; margin: 15px 0 10px;">❄️ 冷門號碼 TOP 5</div>
+                <div id="coldNumbersChart"></div>
+            </div>
+
+            <!-- 迭代4: 進階統計分析 -->
+            <div class="advanced-stats">
+                <div class="section-title">📈 進階統計分析</div>
+                <div class="stats-tabs">
+                    <button class="stats-tab active" onclick="switchStatsTab('sum')">和值分析</button>
+                    <button class="stats-tab" onclick="switchStatsTab('range')">區間分布</button>
+                    <button class="stats-tab" onclick="switchStatsTab('missing')">遺漏值</button>
+                    <button class="stats-tab" onclick="switchStatsTab('pairs')">組合頻率</button>
+                </div>
+
+                <!-- 和值分析 -->
+                <div class="stats-content active" id="sumStats">
+                    <div class="sum-analysis" id="sumAnalysis"></div>
+                </div>
+
+                <!-- 區間分布 -->
+                <div class="stats-content" id="rangeStats">
+                    <div class="range-chart" id="rangeChart"></div>
+                </div>
+
+                <!-- 遺漏值追蹤 -->
+                <div class="stats-content" id="missingStats">
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <table class="missing-table" id="missingTable">
+                            <thead>
+                                <tr>
+                                    <th>號碼</th>
+                                    <th>遺漏期數</th>
+                                    <th>最大遺漏</th>
+                                    <th>平均遺漏</th>
+                                    <th>狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody id="missingTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 組合頻率 -->
+                <div class="stats-content" id="pairsStats">
+                    <div style="font-weight: 600; margin-bottom: 10px;">最常出現的號碼組合 (相鄰號碼)</div>
+                    <div class="pair-grid" id="pairGrid"></div>
+                </div>
+            </div>
+
+            <!-- 迭代5: 匯出功能 -->
+            <div class="export-section">
+                <button class="export-btn" onclick="exportStatisticsReport()">
+                    📊 匯出統計報告
+                </button>
+            </div>
+        </div>
+
+        <!-- 選號設定 -->
+        <div class="card">
+            <div class="section-title">⚙️ 選號設定</div>
+            
+            <!-- 必含號碼 -->
+            <div class="must-have-section">
+                <div style="font-weight: 600; margin-bottom: 10px;">🎯 必含號碼（最多3個）</div>
+                <div class="number-input-grid" id="mustHaveGrid"></div>
+            </div>
+
+            <div class="options">
+                <div class="option-row">
+                    <span class="option-label">🚫 排除連號</span>
+                    <label class="switch">
+                        <input type="checkbox" id="excludeConsecutive" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="option-row">
+                    <span class="option-label">⚖️ 奇偶平衡</span>
+                    <label class="switch">
+                        <input type="checkbox" id="balanceOddEven" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="option-row">
+                    <span class="option-label">🔥 顯示冷熱號標記</span>
+                    <label class="switch">
+                        <input type="checkbox" id="showHotCold" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <button class="generate-btn" onclick="generateNumbers()">
+                🎲 生成 5 組智能號碼
+            </button>
+
+            <div class="results" id="results"></div>
+
+            <!-- 迭代5: 匯出生成號碼 -->
+            <div class="export-section" id="exportGeneratedSection" style="display: none;">
+                <button class="export-btn secondary" onclick="exportGeneratedNumbers()">
+                    📥 匯出本次號碼 (CSV)
+                </button>
+            </div>
+        </div>
+
+        <!-- 收藏號碼 -->
+        <div class="card">
+            <div class="section-title">💾 我的收藏號碼</div>
+            <div class="saved-numbers" id="savedNumbers">
+                <div style="text-align: center; color: #999; padding: 20px;">
+                    尚無收藏號碼，點擊號碼組的「收藏」按鈕來儲存
+                </div>
+            </div>
+            <!-- 迭代5: 匯出收藏號碼 -->
+            <div class="export-section" id="exportSavedSection" style="display: none;">
+                <button class="export-btn" onclick="exportSavedNumbers()">
+                    📥 匯出收藏號碼 (CSV)
+                </button>
+            </div>
+        </div>
+
+        <!-- 歷史開獎 -->
+        <div class="card history-section">
+            <div class="history-title">📅 最近開獎紀錄</div>
+            <div id="historyRecords"></div>
+        </div>
+
+        <div class="footer">
+            ⚠️ 本工具僅供娛樂參考，無法增加中獎機率<br>
+            請理性投注，未滿18歲請勿購買彩券
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== 迭代6: 錯誤處理工具函數 ====================
+
+        // 安全的localStorage操作
+        const Storage = {
+            get(key, defaultValue = null) {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (error) {
+                    console.error(`Storage.get error for key "${key}":`, error);
+                    showToast('❌ 讀取儲存資料時發生錯誤', 'error');
+                    return defaultValue;
+                }
+            },
+            set(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return true;
+                } catch (error) {
+                    console.error(`Storage.set error for key "${key}":`, error);
+                    if (error.name === 'QuotaExceededError') {
+                        showToast('❌ 儲存空間已滿，請清理部分資料', 'error');
+                    } else {
+                        showToast('❌ 儲存資料時發生錯誤', 'error');
+                    }
+                    return false;
+                }
+            },
+            remove(key) {
+                try {
+                    localStorage.removeItem(key);
+                    return true;
+                } catch (error) {
+                    console.error(`Storage.remove error for key "${key}":`, error);
+                    return false;
+                }
+            }
+        };
+
+        // 輸入驗證函數
+        const Validator = {
+            isValidNumber(num, min, max) {
+                return Number.isInteger(num) && num >= min && num <= max;
+            },
+            isValidNumberArray(arr, min, max, length) {
+                return Array.isArray(arr) &&
+                       arr.length === length &&
+                       arr.every(n => this.isValidNumber(n, min, max));
+            },
+            sanitizeInput(input) {
+                if (typeof input !== 'string') return '';
+                return input.replace(/[<>\"\'&]/g, '');
+            }
+        };
+
+        // ==================== 全局變數 ====================
+        let currentGameMode = 'lotto';
+        let generatedCount = 0;
+        let savedNumbers = [];
+        let mustHaveNumbers = [];
+        let currentGeneratedNumbers = []; // 儲存當前生成的號碼供匯出
+
+        // 模擬歷史數據 - 大樂透
+        const lottoHistory = [
+            { date: '2024/12/27', numbers: [3, 15, 23, 28, 35, 42], special: 18 },
+            { date: '2024/12/24', numbers: [7, 12, 19, 31, 38, 45], special: 22 },
+            { date: '2024/12/20', numbers: [5, 11, 24, 33, 40, 47], special: 9 },
+            { date: '2024/12/17', numbers: [2, 14, 21, 29, 36, 43], special: 16 },
+            { date: '2024/12/13', numbers: [8, 17, 25, 32, 39, 46], special: 11 }
+        ];
+
+        // 模擬歷史數據 - 威力彩
+        const powerHistory = [
+            { date: '2024/12/26', numbers: [5, 12, 18, 27, 33, 38], special: 7 },
+            { date: '2024/12/23', numbers: [3, 9, 15, 22, 29, 35], special: 4 },
+            { date: '2024/12/19', numbers: [7, 14, 20, 26, 31, 37], special: 2 },
+            { date: '2024/12/16', numbers: [2, 11, 17, 24, 30, 36], special: 6 },
+            { date: '2024/12/12', numbers: [6, 13, 19, 25, 32, 34], special: 1 }
+        ];
+
+        // 計算冷熱號
+        function calculateHotColdNumbers() {
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const frequency = {};
+            
+            history.forEach(record => {
+                record.numbers.forEach(num => {
+                    frequency[num] = (frequency[num] || 0) + 1;
+                });
+            });
+
+            const sorted = Object.entries(frequency).sort((a, b) => b[1] - a[1]);
+            const hot = sorted.slice(0, 5);
+            const cold = sorted.slice(-5).reverse();
+
+            return { hot, cold, frequency };
+        }
+
+        // 更新圖表
+        function updateCharts() {
+            const { hot, cold } = calculateHotColdNumbers();
+            
+            const hotChart = document.getElementById('hotNumbersChart');
+            const coldChart = document.getElementById('coldNumbersChart');
+            
+            hotChart.innerHTML = hot.map(([num, count]) => `
+                <div class="chart-bar">
+                    <div class="chart-label">號碼 ${num}</div>
+                    <div class="chart-bar-fill" style="width: ${count * 40}px">${count} 次</div>
+                </div>
+            `).join('');
+
+            coldChart.innerHTML = cold.map(([num, count]) => `
+                <div class="chart-bar">
+                    <div class="chart-label">號碼 ${num}</div>
+                    <div class="chart-bar-fill" style="width: ${count * 40}px; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%)">${count} 次</div>
+                </div>
+            `).join('');
+        }
+
+        // 初始化必含號碼網格
+        function initMustHaveGrid() {
+            const grid = document.getElementById('mustHaveGrid');
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+            
+            grid.innerHTML = '';
+            for (let i = 1; i <= maxNum; i++) {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `num-${i}`;
+                checkbox.className = 'number-checkbox';
+                checkbox.value = i;
+                checkbox.onchange = handleMustHaveChange;
+                
+                const label = document.createElement('label');
+                label.htmlFor = `num-${i}`;
+                label.className = 'number-label';
+                label.textContent = i;
+                
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(checkbox);
+                wrapper.appendChild(label);
+                grid.appendChild(wrapper);
+            }
+        }
+
+        // 處理必含號碼變更
+        function handleMustHaveChange(e) {
+            const num = parseInt(e.target.value);
+            if (e.target.checked) {
+                if (mustHaveNumbers.length >= 3) {
+                    e.target.checked = false;
+                    showToast('❌ 最多只能選擇3個必含號碼');
+                    return;
+                }
+                mustHaveNumbers.push(num);
+            } else {
+                mustHaveNumbers = mustHaveNumbers.filter(n => n !== num);
+            }
+        }
+
+        // 切換模式 (迭代4增強: 更新進階統計)
+        function switchMode(mode) {
+            try {
+                currentGameMode = mode;
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                document.getElementById('currentMode').textContent =
+                    mode === 'lotto' ? '大樂透' : '威力彩';
+
+                mustHaveNumbers = [];
+                currentGeneratedNumbers = []; // 清空生成記錄
+                document.getElementById('exportGeneratedSection').style.display = 'none';
+
+                initMustHaveGrid();
+                updateCharts();
+                updateAdvancedStats(); // 迭代4: 更新進階統計
+                updateHistoryDisplay();
+                showToast(`✅ 已切換至${mode === 'lotto' ? '大樂透' : '威力彩'}模式`);
+            } catch (error) {
+                console.error('switchMode error:', error);
+                showToast('❌ 切換模式時發生錯誤', 'error');
+            }
+        }
+
+        // 生成號碼 (迭代6增強: 加入錯誤處理)
+        function generateNumbers() {
+            try {
+                const excludeConsecutive = document.getElementById('excludeConsecutive').checked;
+                const balanceOddEven = document.getElementById('balanceOddEven').checked;
+                const showHotCold = document.getElementById('showHotCold').checked;
+                const resultsDiv = document.getElementById('results');
+
+                const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+                const specialMax = currentGameMode === 'lotto' ? 49 : 8;
+                const { frequency } = calculateHotColdNumbers();
+
+                resultsDiv.innerHTML = '';
+                currentGeneratedNumbers = []; // 清空並準備新的生成記錄
+
+                // 使用DocumentFragment優化DOM操作 (迭代6)
+                const fragment = document.createDocumentFragment();
+
+                for (let i = 0; i < 5; i++) {
+                    let numbers;
+                    let attempts = 0;
+
+                    do {
+                        numbers = generateSingleSet(maxNum);
+                        attempts++;
+                    } while (
+                        ((excludeConsecutive && hasConsecutive(numbers)) ||
+                        (balanceOddEven && !isBalanced(numbers)) ||
+                        !hasMustHaveNumbers(numbers)) &&
+                        attempts < 200
+                    );
+
+                    // 生成特別號
+                    let special;
+                    if (currentGameMode === 'lotto') {
+                        do {
+                            special = Math.floor(Math.random() * specialMax) + 1;
+                        } while (numbers.includes(special));
+                    } else {
+                        special = Math.floor(Math.random() * specialMax) + 1;
+                    }
+
+                    // 儲存生成的號碼供匯出 (迭代5)
+                    currentGeneratedNumbers.push({ numbers: [...numbers], special });
+
+                    // 創建顯示元素
+                    const groupDiv = createNumberSetElement(numbers, special, i + 1, frequency, showHotCold);
+                    fragment.appendChild(groupDiv);
+                }
+
+                resultsDiv.appendChild(fragment);
+
+                generatedCount += 5;
+                document.getElementById('totalGenerated').textContent = generatedCount;
+
+                // 顯示匯出按鈕 (迭代5)
+                document.getElementById('exportGeneratedSection').style.display = 'flex';
+
+            } catch (error) {
+                console.error('generateNumbers error:', error);
+                showToast('❌ 生成號碼時發生錯誤', 'error');
+            }
+        }
+
+        // 生成單組號碼
+        function generateSingleSet(maxNum) {
+            const numbers = [...mustHaveNumbers];
+            while (numbers.length < 6) {
+                const num = Math.floor(Math.random() * maxNum) + 1;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            return numbers.sort((a, b) => a - b);
+        }
+
+        // 檢查是否包含必含號碼
+        function hasMustHaveNumbers(numbers) {
+            return mustHaveNumbers.every(num => numbers.includes(num));
+        }
+
+        // 檢查連號
+        function hasConsecutive(numbers) {
+            for (let i = 0; i < numbers.length - 1; i++) {
+                if (numbers[i + 1] - numbers[i] === 1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 檢查奇偶平衡
+        function isBalanced(numbers) {
+            const oddCount = numbers.filter(n => n % 2 === 1).length;
+            return oddCount >= 2 && oddCount <= 4;
+        }
+
+        // 創建號碼組元素 (迭代6: 重構為可返回元素以支援DocumentFragment)
+        function createNumberSetElement(numbers, special, groupNum, frequency, showHotCold) {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'number-group';
+
+            const label = document.createElement('span');
+            label.className = 'group-label';
+            label.textContent = `組${groupNum}`;
+            groupDiv.appendChild(label);
+
+            // 計算熱門門檻
+            const freqValues = Object.values(frequency);
+            const avgFreq = freqValues.length > 0
+                ? freqValues.reduce((a, b) => a + b, 0) / freqValues.length
+                : 0;
+
+            numbers.forEach(num => {
+                const ball = document.createElement('div');
+                ball.className = 'number-ball';
+                ball.textContent = num.toString().padStart(2, '0');
+
+                if (showHotCold && frequency[num]) {
+                    if (frequency[num] > avgFreq) {
+                        const indicator = document.createElement('div');
+                        indicator.className = 'hot-indicator';
+                        indicator.textContent = '🔥';
+                        ball.appendChild(indicator);
+                    } else if (frequency[num] < avgFreq * 0.7) {
+                        const indicator = document.createElement('div');
+                        indicator.className = 'cold-indicator';
+                        indicator.textContent = '❄️';
+                        ball.appendChild(indicator);
+                    }
+                }
+
+                groupDiv.appendChild(ball);
+            });
+
+            // 特別號
+            const specialBall = document.createElement('div');
+            specialBall.className = 'number-ball special-ball';
+            specialBall.textContent = special.toString().padStart(2, '0');
+            groupDiv.appendChild(specialBall);
+
+            // 收藏按鈕
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'save-btn';
+            saveBtn.textContent = '💾 收藏';
+            saveBtn.onclick = () => saveNumberSet(numbers, special);
+            groupDiv.appendChild(saveBtn);
+
+            // 複製按鈕
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = '📋 複製';
+            copyBtn.onclick = () => copyNumbers(numbers, special);
+            groupDiv.appendChild(copyBtn);
+
+            return groupDiv;
+        }
+
+        // 複製號碼
+        function copyNumbers(numbers, special) {
+            const text = currentGameMode === 'lotto' 
+                ? `${numbers.join(', ')} 特別號: ${special}`
+                : `${numbers.join(', ')} 第二區: ${special}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ 已複製到剪貼簿');
+            });
+        }
+
+        // 儲存號碼組 (迭代6增強: 使用安全Storage)
+        function saveNumberSet(numbers, special) {
+            try {
+                // 輸入驗證 (迭代6)
+                const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+                if (!Validator.isValidNumberArray(numbers, 1, maxNum, 6)) {
+                    showToast('❌ 號碼驗證失敗', 'error');
+                    return;
+                }
+
+                const numberSet = {
+                    id: Date.now(),
+                    mode: currentGameMode,
+                    numbers: [...numbers],
+                    special: special,
+                    date: new Date().toLocaleDateString('zh-TW')
+                };
+
+                savedNumbers.push(numberSet);
+
+                // 使用安全的Storage操作 (迭代6)
+                if (Storage.set('savedNumbers', savedNumbers)) {
+                    updateSavedDisplay();
+                    showToast('✅ 已加入收藏');
+                } else {
+                    // 如果儲存失敗，回滾
+                    savedNumbers.pop();
+                }
+            } catch (error) {
+                console.error('saveNumberSet error:', error);
+                showToast('❌ 儲存號碼時發生錯誤', 'error');
+            }
+        }
+
+        // 更新收藏顯示 (迭代5增強: 控制匯出按鈕顯示)
+        function updateSavedDisplay() {
+            const container = document.getElementById('savedNumbers');
+            const exportSection = document.getElementById('exportSavedSection');
+            document.getElementById('totalSaved').textContent = savedNumbers.length;
+
+            if (savedNumbers.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">尚無收藏號碼</div>';
+                if (exportSection) exportSection.style.display = 'none';
+                return;
+            }
+
+            // 顯示匯出按鈕 (迭代5)
+            if (exportSection) exportSection.style.display = 'flex';
+
+            // 使用DocumentFragment優化DOM操作 (迭代6)
+            const fragment = document.createDocumentFragment();
+            savedNumbers.forEach(set => {
+                const item = document.createElement('div');
+                item.className = 'saved-item';
+                item.innerHTML = `
+                    <div>
+                        <strong>${set.mode === 'lotto' ? '大樂透' : '威力彩'}</strong>
+                        <span style="color: #666; font-size: 0.9em;">(${set.date})</span><br>
+                        <span style="font-size: 1.1em;">${set.numbers.join(', ')} + ${set.special}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteNumberSet(${set.id})">刪除</button>
+                `;
+                fragment.appendChild(item);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(fragment);
+        }
+
+        // 刪除收藏 (迭代6增強: 使用安全Storage)
+        function deleteNumberSet(id) {
+            try {
+                // 驗證 id (迭代6)
+                if (!Number.isInteger(id) || id <= 0) {
+                    showToast('❌ 無效的收藏編號', 'error');
+                    return;
+                }
+
+                const originalLength = savedNumbers.length;
+                savedNumbers = savedNumbers.filter(set => set.id !== id);
+
+                if (savedNumbers.length === originalLength) {
+                    showToast('❌ 找不到該收藏', 'error');
+                    return;
+                }
+
+                // 使用安全的Storage操作 (迭代6)
+                if (Storage.set('savedNumbers', savedNumbers)) {
+                    updateSavedDisplay();
+                    showToast('🗑️ 已刪除收藏');
+                }
+            } catch (error) {
+                console.error('deleteNumberSet error:', error);
+                showToast('❌ 刪除收藏時發生錯誤', 'error');
+            }
+        }
+
+        // 更新歷史記錄顯示
+        function updateHistoryDisplay() {
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const container = document.getElementById('historyRecords');
+            
+            container.innerHTML = history.map(record => `
+                <div class="history-item">
+                    <span class="history-date">${record.date}</span>
+                    <div class="history-numbers">
+                        ${record.numbers.map(num => 
+                            `<div class="history-ball">${num.toString().padStart(2, '0')}</div>`
+                        ).join('')}
+                        <div class="history-ball special-ball">${record.special.toString().padStart(2, '0')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 顯示提示訊息 (迭代6增強: 支援錯誤類型)
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('error');
+            if (type === 'error') {
+                toast.classList.add('error');
+            }
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // ==================== 迭代4: 進階統計分析功能 ====================
+
+        // 切換統計標籤頁
+        function switchStatsTab(tabName) {
+            document.querySelectorAll('.stats-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.stats-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Stats').classList.add('active');
+
+            // 更新對應的統計內容
+            updateAdvancedStats();
+        }
+
+        // 更新所有進階統計
+        function updateAdvancedStats() {
+            updateSumAnalysis();
+            updateRangeDistribution();
+            updateMissingValues();
+            updatePairFrequency();
+        }
+
+        // 和值分析
+        function updateSumAnalysis() {
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const container = document.getElementById('sumAnalysis');
+
+            const sums = history.map(record => record.numbers.reduce((a, b) => a + b, 0));
+            const avgSum = Math.round(sums.reduce((a, b) => a + b, 0) / sums.length);
+            const minSum = Math.min(...sums);
+            const maxSum = Math.max(...sums);
+            const latestSum = sums[0];
+
+            // 計算建議和值範圍
+            const stdDev = Math.sqrt(sums.reduce((acc, val) => acc + Math.pow(val - avgSum, 2), 0) / sums.length);
+            const suggestedMin = Math.round(avgSum - stdDev);
+            const suggestedMax = Math.round(avgSum + stdDev);
+
+            container.innerHTML = `
+                <div class="sum-card">
+                    <div class="stat-label">最近和值</div>
+                    <div class="sum-value">${latestSum}</div>
+                </div>
+                <div class="sum-card">
+                    <div class="stat-label">平均和值</div>
+                    <div class="sum-value">${avgSum}</div>
+                </div>
+                <div class="sum-card">
+                    <div class="stat-label">最小和值</div>
+                    <div class="sum-value">${minSum}</div>
+                </div>
+                <div class="sum-card">
+                    <div class="stat-label">最大和值</div>
+                    <div class="sum-value">${maxSum}</div>
+                </div>
+                <div class="sum-card" style="grid-column: span 2;">
+                    <div class="stat-label">建議和值範圍</div>
+                    <div class="sum-value" style="font-size: 1.4em;">${suggestedMin} ~ ${suggestedMax}</div>
+                </div>
+            `;
+        }
+
+        // 區間分布圖
+        function updateRangeDistribution() {
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+            const container = document.getElementById('rangeChart');
+
+            // 定義區間
+            const ranges = currentGameMode === 'lotto'
+                ? [[1, 10], [11, 20], [21, 30], [31, 40], [41, 49]]
+                : [[1, 8], [9, 16], [17, 24], [25, 32], [33, 38]];
+
+            const rangeCounts = ranges.map(() => 0);
+
+            // 統計每個區間的出現次數
+            history.forEach(record => {
+                record.numbers.forEach(num => {
+                    for (let i = 0; i < ranges.length; i++) {
+                        if (num >= ranges[i][0] && num <= ranges[i][1]) {
+                            rangeCounts[i]++;
+                            break;
+                        }
+                    }
+                });
+            });
+
+            const maxCount = Math.max(...rangeCounts);
+
+            // 使用DocumentFragment優化DOM操作 (迭代6)
+            const fragment = document.createDocumentFragment();
+            ranges.forEach((range, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'range-bar-wrapper';
+
+                const count = document.createElement('div');
+                count.className = 'range-count';
+                count.textContent = rangeCounts[index];
+
+                const bar = document.createElement('div');
+                bar.className = 'range-bar';
+                bar.style.height = `${(rangeCounts[index] / maxCount) * 100}px`;
+
+                const label = document.createElement('div');
+                label.className = 'range-label';
+                label.textContent = `${range[0]}-${range[1]}`;
+
+                wrapper.appendChild(count);
+                wrapper.appendChild(bar);
+                wrapper.appendChild(label);
+                fragment.appendChild(wrapper);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(fragment);
+        }
+
+        // 遺漏值追蹤
+        function updateMissingValues() {
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+            const tbody = document.getElementById('missingTableBody');
+
+            const missingData = [];
+
+            // 計算每個號碼的遺漏值
+            for (let num = 1; num <= maxNum; num++) {
+                let currentMissing = 0;
+                let maxMissing = 0;
+                let totalMissing = 0;
+                let appearances = 0;
+                let lastMissing = 0;
+
+                // 檢查每期
+                for (let i = 0; i < history.length; i++) {
+                    if (history[i].numbers.includes(num)) {
+                        if (appearances > 0) {
+                            totalMissing += currentMissing;
+                        }
+                        maxMissing = Math.max(maxMissing, currentMissing);
+                        currentMissing = 0;
+                        appearances++;
+                    } else {
+                        currentMissing++;
+                        if (i === 0) lastMissing = currentMissing;
+                    }
+                }
+
+                // 如果到最後都沒出現，當前遺漏就是總期數
+                if (appearances === 0) {
+                    lastMissing = history.length;
+                    maxMissing = history.length;
+                }
+
+                const avgMissing = appearances > 1 ? Math.round(totalMissing / (appearances - 1) * 10) / 10 : '-';
+
+                missingData.push({
+                    num,
+                    currentMissing: lastMissing,
+                    maxMissing,
+                    avgMissing,
+                    appearances
+                });
+            }
+
+            // 按當前遺漏值排序（降序）顯示前15個
+            missingData.sort((a, b) => b.currentMissing - a.currentMissing);
+            const topMissing = missingData.slice(0, 15);
+
+            // 使用DocumentFragment優化DOM操作 (迭代6)
+            const fragment = document.createDocumentFragment();
+            topMissing.forEach(data => {
+                const tr = document.createElement('tr');
+                const statusClass = data.currentMissing >= 3 ? 'missing-high' :
+                                   data.currentMissing === 0 ? 'missing-low' : '';
+                const statusText = data.currentMissing >= 3 ? '🔴 待補' :
+                                  data.currentMissing === 0 ? '🟢 剛開' : '🟡 正常';
+
+                tr.innerHTML = `
+                    <td><strong>${data.num}</strong></td>
+                    <td class="${statusClass}">${data.currentMissing}</td>
+                    <td>${data.maxMissing}</td>
+                    <td>${data.avgMissing}</td>
+                    <td>${statusText}</td>
+                `;
+                fragment.appendChild(tr);
+            });
+
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+        }
+
+        // 組合頻率分析
+        function updatePairFrequency() {
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const container = document.getElementById('pairGrid');
+
+            const pairCounts = {};
+
+            // 統計相鄰號碼組合
+            history.forEach(record => {
+                const sorted = [...record.numbers].sort((a, b) => a - b);
+                for (let i = 0; i < sorted.length - 1; i++) {
+                    const pair = `${sorted[i]}-${sorted[i + 1]}`;
+                    pairCounts[pair] = (pairCounts[pair] || 0) + 1;
+                }
+            });
+
+            // 排序並取前10
+            const sortedPairs = Object.entries(pairCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            // 使用DocumentFragment優化DOM操作 (迭代6)
+            const fragment = document.createDocumentFragment();
+            sortedPairs.forEach(([pair, count]) => {
+                const item = document.createElement('div');
+                item.className = 'pair-item';
+                item.innerHTML = `
+                    <div class="pair-nums">${pair}</div>
+                    <div class="pair-count">${count} 次</div>
+                `;
+                fragment.appendChild(item);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(fragment);
+        }
+
+        // ==================== 迭代5: 匯出功能 ====================
+
+        // 匯出CSV檔案通用函數
+        function downloadCSV(content, filename) {
+            try {
+                // 添加BOM以支援Excel正確顯示中文
+                const BOM = '\uFEFF';
+                const blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showToast('✅ 檔案已下載');
+            } catch (error) {
+                console.error('Download CSV error:', error);
+                showToast('❌ 下載檔案時發生錯誤', 'error');
+            }
+        }
+
+        // 匯出生成的號碼
+        function exportGeneratedNumbers() {
+            if (currentGeneratedNumbers.length === 0) {
+                showToast('❌ 沒有可匯出的號碼', 'error');
+                return;
+            }
+
+            const modeLabel = currentGameMode === 'lotto' ? '大樂透' : '威力彩';
+            const specialLabel = currentGameMode === 'lotto' ? '特別號' : '第二區';
+            const dateStr = new Date().toLocaleString('zh-TW');
+
+            let csv = `智能彩券選號系統 Pro - ${modeLabel} 生成號碼\n`;
+            csv += `生成時間: ${dateStr}\n\n`;
+            csv += `組別,號碼1,號碼2,號碼3,號碼4,號碼5,號碼6,${specialLabel}\n`;
+
+            currentGeneratedNumbers.forEach((set, index) => {
+                csv += `第${index + 1}組,${set.numbers.join(',')},${set.special}\n`;
+            });
+
+            downloadCSV(csv, `彩券號碼_${modeLabel}_${dateStr.replace(/[/:]/g, '-')}.csv`);
+        }
+
+        // 匯出收藏的號碼
+        function exportSavedNumbers() {
+            if (savedNumbers.length === 0) {
+                showToast('❌ 沒有收藏的號碼可匯出', 'error');
+                return;
+            }
+
+            const dateStr = new Date().toLocaleString('zh-TW');
+
+            let csv = `智能彩券選號系統 Pro - 收藏號碼\n`;
+            csv += `匯出時間: ${dateStr}\n\n`;
+            csv += `彩種,收藏日期,號碼1,號碼2,號碼3,號碼4,號碼5,號碼6,特別號\n`;
+
+            savedNumbers.forEach(set => {
+                const modeLabel = set.mode === 'lotto' ? '大樂透' : '威力彩';
+                csv += `${modeLabel},${set.date},${set.numbers.join(',')},${set.special}\n`;
+            });
+
+            downloadCSV(csv, `收藏號碼_${dateStr.replace(/[/:]/g, '-')}.csv`);
+        }
+
+        // 匯出統計報告
+        function exportStatisticsReport() {
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const modeLabel = currentGameMode === 'lotto' ? '大樂透' : '威力彩';
+            const dateStr = new Date().toLocaleString('zh-TW');
+
+            // 計算各種統計數據
+            const { hot, cold, frequency } = calculateHotColdNumbers();
+            const sums = history.map(record => record.numbers.reduce((a, b) => a + b, 0));
+            const avgSum = Math.round(sums.reduce((a, b) => a + b, 0) / sums.length);
+
+            let csv = `智能彩券選號系統 Pro - ${modeLabel} 統計報告\n`;
+            csv += `報告生成時間: ${dateStr}\n`;
+            csv += `分析期數: ${history.length} 期\n\n`;
+
+            // 熱門號碼
+            csv += `=== 熱門號碼 TOP 5 ===\n`;
+            csv += `號碼,出現次數\n`;
+            hot.forEach(([num, count]) => {
+                csv += `${num},${count}\n`;
+            });
+
+            // 冷門號碼
+            csv += `\n=== 冷門號碼 TOP 5 ===\n`;
+            csv += `號碼,出現次數\n`;
+            cold.forEach(([num, count]) => {
+                csv += `${num},${count}\n`;
+            });
+
+            // 和值統計
+            csv += `\n=== 和值統計 ===\n`;
+            csv += `平均和值,${avgSum}\n`;
+            csv += `最小和值,${Math.min(...sums)}\n`;
+            csv += `最大和值,${Math.max(...sums)}\n`;
+
+            // 歷史開獎記錄
+            csv += `\n=== 歷史開獎記錄 ===\n`;
+            csv += `日期,號碼,${currentGameMode === 'lotto' ? '特別號' : '第二區'}\n`;
+            history.forEach(record => {
+                csv += `${record.date},${record.numbers.join(' ')},${record.special}\n`;
+            });
+
+            downloadCSV(csv, `統計報告_${modeLabel}_${dateStr.replace(/[/:]/g, '-')}.csv`);
+        }
+
+        // 初始化 (迭代6增強: 使用安全Storage和錯誤處理)
+        window.onload = function() {
+            try {
+                // 載入儲存的號碼 - 使用安全的Storage操作 (迭代6)
+                savedNumbers = Storage.get('savedNumbers', []);
+
+                // 驗證載入的數據格式 (迭代6)
+                if (!Array.isArray(savedNumbers)) {
+                    console.warn('Invalid savedNumbers format, resetting to empty array');
+                    savedNumbers = [];
+                }
+
+                initMustHaveGrid();
+                updateCharts();
+                updateAdvancedStats(); // 迭代4: 初始化進階統計
+                updateHistoryDisplay();
+                updateSavedDisplay();
+                generateNumbers();
+
+                console.log('智能彩券選號系統 Pro 已初始化完成');
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('❌ 系統初始化失敗，請重新整理頁面', 'error');
+            }
+        };
+    </script>
+</body>
+</html>
