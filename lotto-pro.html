@@ -2,7 +2,14 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="智能彩券選號系統 - 運用統計分析與智能演算法的台灣樂透選號工具">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="樂透Pro">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
     <title>智能彩券選號系統 Pro</title>
     <style>
         * {
@@ -658,6 +665,507 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* ==================== 迭代7: 響應式設計 ==================== */
+
+        /* 底部導航列 (手機版) */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            padding: 8px 0;
+            padding-bottom: env(safe-area-inset-bottom, 8px);
+        }
+
+        .bottom-nav-inner {
+            display: flex;
+            justify-content: space-around;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 0.75em;
+            font-weight: 600;
+            transition: all 0.2s;
+            border-radius: 12px;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-item-icon {
+            font-size: 1.5em;
+        }
+
+        /* 平板 (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 100%;
+                padding: 0 15px;
+            }
+
+            .stats-section {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* 手機橫向 & 小平板 (481px - 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                padding-bottom: 90px; /* 為底部導航留空間 */
+            }
+
+            .bottom-nav {
+                display: block;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+
+            .mode-selector {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .mode-btn {
+                width: 100%;
+                padding: 15px;
+                font-size: 1em;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 16px;
+            }
+
+            .section-title {
+                font-size: 1.1em;
+            }
+
+            .stats-section {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 12px 8px;
+            }
+
+            .stat-value {
+                font-size: 1.2em;
+            }
+
+            .stat-label {
+                font-size: 0.8em;
+            }
+
+            /* 進階統計標籤頁優化 */
+            .stats-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 5px;
+            }
+
+            .stats-tabs::-webkit-scrollbar {
+                display: none;
+            }
+
+            .stats-tab {
+                flex-shrink: 0;
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+
+            /* 號碼組優化 */
+            .number-group {
+                flex-wrap: wrap;
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .group-label {
+                width: 100%;
+                margin-bottom: 5px;
+                font-size: 0.9em;
+            }
+
+            .number-ball {
+                width: 40px;
+                height: 40px;
+                font-size: 1em;
+            }
+
+            .save-btn, .copy-btn {
+                position: static;
+                padding: 10px 12px;
+                font-size: 0.85em;
+                margin-top: 8px;
+            }
+
+            /* 匯出按鈕優化 */
+            .export-section {
+                flex-direction: column;
+            }
+
+            .export-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 14px;
+            }
+
+            /* 歷史記錄優化 */
+            .history-item {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .history-numbers {
+                flex-wrap: wrap;
+            }
+
+            .history-ball {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85em;
+            }
+
+            /* 收藏項目優化 */
+            .saved-item {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .delete-btn {
+                align-self: flex-end;
+            }
+
+            /* 區間分布圖優化 */
+            .range-chart {
+                height: 120px;
+                padding: 15px 5px;
+            }
+
+            .range-bar {
+                width: 30px;
+            }
+
+            .range-label {
+                font-size: 0.65em;
+            }
+
+            /* 遺漏值表格優化 */
+            .missing-table th,
+            .missing-table td {
+                padding: 8px 6px;
+                font-size: 0.85em;
+            }
+
+            /* 組合頻率網格優化 */
+            .pair-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+
+        /* 手機縱向 (最大480px) */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                padding-bottom: 85px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .card {
+                padding: 15px;
+                border-radius: 14px;
+                margin-bottom: 15px;
+            }
+
+            .section-title {
+                font-size: 1em;
+                margin-bottom: 12px;
+            }
+
+            /* 必含號碼網格優化 */
+            .number-input-grid {
+                grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+                gap: 6px;
+            }
+
+            .number-label {
+                width: 38px;
+                height: 38px;
+                font-size: 0.9em;
+            }
+
+            /* 選項開關行優化 */
+            .option-row {
+                padding: 12px;
+            }
+
+            .option-label {
+                font-size: 0.9em;
+            }
+
+            /* 生成按鈕優化 - 更大的觸控目標 */
+            .generate-btn {
+                padding: 18px;
+                font-size: 1.1em;
+                border-radius: 14px;
+            }
+
+            /* 號碼球優化 */
+            .number-ball {
+                width: 36px;
+                height: 36px;
+                font-size: 0.95em;
+            }
+
+            .hot-indicator,
+            .cold-indicator {
+                width: 16px;
+                height: 16px;
+                font-size: 0.6em;
+            }
+
+            /* 統計卡片優化 */
+            .stats-section {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 10px 5px;
+            }
+
+            .stat-value {
+                font-size: 1.1em;
+            }
+
+            .stat-label {
+                font-size: 0.7em;
+            }
+
+            /* 圖表優化 */
+            .chart-bar {
+                margin-bottom: 6px;
+            }
+
+            .chart-label {
+                width: 50px;
+                font-size: 0.8em;
+            }
+
+            .chart-bar-fill {
+                height: 22px;
+                font-size: 0.75em;
+                padding: 0 8px;
+            }
+
+            /* 和值分析卡片優化 */
+            .sum-analysis {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .sum-card {
+                padding: 12px 8px;
+            }
+
+            .sum-value {
+                font-size: 1.4em;
+            }
+
+            .sum-card[style*="grid-column: span 2"] {
+                grid-column: span 2;
+            }
+
+            /* Toast 優化 */
+            .toast {
+                top: auto;
+                bottom: 100px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
+                padding: 12px 20px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* 超小螢幕 (最大360px) */
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 1.3em;
+            }
+
+            .number-input-grid {
+                grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+            }
+
+            .number-label {
+                width: 34px;
+                height: 34px;
+                font-size: 0.8em;
+            }
+
+            .number-ball {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85em;
+            }
+
+            .stats-section {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        /* 深色模式支援 (系統偏好) */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            }
+
+            .card {
+                background: #1a202c;
+                color: #e2e8f0;
+            }
+
+            .section-title {
+                color: #e2e8f0;
+            }
+
+            .option-row,
+            .stat-card,
+            .number-group,
+            .history-item {
+                background: #2d3748;
+            }
+
+            .option-label,
+            .stat-label {
+                color: #a0aec0;
+            }
+
+            .stat-value {
+                color: #90cdf4;
+            }
+
+            .saved-item {
+                background: #2d3748;
+                border-left-color: #90cdf4;
+            }
+
+            .stats-content {
+                background: #2d3748;
+            }
+
+            .sum-card,
+            .pair-item {
+                background: #1a202c;
+            }
+
+            .missing-table {
+                background: #1a202c;
+            }
+
+            .missing-table th {
+                background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            }
+
+            .missing-table td {
+                border-bottom-color: #4a5568;
+            }
+
+            .range-chart {
+                background: #1a202c;
+            }
+
+            .bottom-nav {
+                background: #1a202c;
+            }
+
+            .nav-item {
+                color: #a0aec0;
+            }
+
+            .nav-item.active {
+                color: #90cdf4;
+                background: rgba(144, 205, 244, 0.1);
+            }
+
+            .stats-tab {
+                background: #4a5568;
+                color: #e2e8f0;
+            }
+
+            .number-label {
+                background: #2d3748;
+                border-color: #4a5568;
+                color: #e2e8f0;
+            }
+
+            .must-have-section {
+                background: #2d3748;
+            }
+        }
+
+        /* 減少動畫 (無障礙支援) */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* 觸控裝置優化 */
+        @media (hover: none) and (pointer: coarse) {
+            .mode-btn,
+            .generate-btn,
+            .copy-btn,
+            .save-btn,
+            .delete-btn,
+            .export-btn,
+            .stats-tab,
+            .nav-item {
+                min-height: 44px; /* Apple推薦的最小觸控目標 */
+            }
+
+            .number-label {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -827,6 +1335,28 @@
             請理性投注，未滿18歲請勿購買彩券
         </div>
     </div>
+
+    <!-- 迭代7: 底部導航列 (手機版) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <div class="bottom-nav-inner">
+            <button class="nav-item active" onclick="scrollToSection('stats')" data-section="stats">
+                <span class="nav-item-icon">📊</span>
+                <span>統計</span>
+            </button>
+            <button class="nav-item" onclick="scrollToSection('generate')" data-section="generate">
+                <span class="nav-item-icon">🎲</span>
+                <span>選號</span>
+            </button>
+            <button class="nav-item" onclick="scrollToSection('saved')" data-section="saved">
+                <span class="nav-item-icon">💾</span>
+                <span>收藏</span>
+            </button>
+            <button class="nav-item" onclick="scrollToSection('history')" data-section="history">
+                <span class="nav-item-icon">📅</span>
+                <span>歷史</span>
+            </button>
+        </div>
+    </nav>
 
     <div class="toast" id="toast"></div>
 
