@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 實作迭代4-6 \\(統計分析 + 匯出功能 + 錯誤處理\\)\n\n迭代4 - 進階統計分析:\n- 和值分析：計算歷史開獎和值統計與建議範圍\n- 區間分布圖：視覺化顯示各數字區間出現頻率\n- 遺漏值追蹤：追蹤號碼當前/最大/平均遺漏期數\n- 組合頻率分析：分析最常出現的相鄰號碼組合\n\n迭代5 - 匯出功能:\n- CSV匯出生成號碼\n- CSV匯出收藏號碼\n- 統計報告完整匯出（含BOM支援中文Excel）\n\n迭代6 - 錯誤處理與效能優化:\n- Storage安全封裝：localStorage操作加入try-catch\n- Validator輸入驗證：數字範圍、陣列格式驗證\n- DocumentFragment：優化DOM批量操作效能\n- 友善錯誤訊息：showToast支援error類型顯示\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git config:*)"
     ]
   }
 }

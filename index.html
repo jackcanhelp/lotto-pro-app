@@ -1182,7 +1182,7 @@
         </div>
 
         <!-- 統計儀表板 -->
-        <div class="card">
+        <div class="card" id="statsSection">
             <div class="section-title">📊 統計儀表板</div>
             <div class="stats-section">
                 <div class="stat-card">
@@ -1261,7 +1261,7 @@
         </div>
 
         <!-- 選號設定 -->
-        <div class="card">
+        <div class="card" id="generateSection">
             <div class="section-title">⚙️ 選號設定</div>
             
             <!-- 必含號碼 -->
@@ -1309,7 +1309,7 @@
         </div>
 
         <!-- 收藏號碼 -->
-        <div class="card">
+        <div class="card" id="savedSection">
             <div class="section-title">💾 我的收藏號碼</div>
             <div class="saved-numbers" id="savedNumbers">
                 <div style="text-align: center; color: #999; padding: 20px;">
@@ -1325,7 +1325,7 @@
         </div>
 
         <!-- 歷史開獎 -->
-        <div class="card history-section">
+        <div class="card history-section" id="historySection">
             <div class="history-title">📅 最近開獎紀錄</div>
             <div id="historyRecords"></div>
         </div>
@@ -1847,6 +1847,72 @@
             }, 2000);
         }
 
+        // ==================== 迭代7: 底部導航功能 ====================
+
+        // 滾動到指定區塊
+        function scrollToSection(sectionName) {
+            const sectionMap = {
+                'stats': 'statsSection',
+                'generate': 'generateSection',
+                'saved': 'savedSection',
+                'history': 'historySection'
+            };
+
+            const targetId = sectionMap[sectionName];
+            const target = document.getElementById(targetId);
+
+            if (target) {
+                // 平滑滾動到目標區塊
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // 更新導航列active狀態
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.dataset.section === sectionName) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        // 監聽滾動以更新導航列狀態
+        function initScrollSpy() {
+            const sections = ['stats', 'generate', 'saved', 'history'];
+            const sectionElements = sections.map(s => ({
+                name: s,
+                element: document.getElementById(s + 'Section')
+            })).filter(s => s.element);
+
+            let ticking = false;
+
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        const scrollPos = window.scrollY + 150; // 偏移量
+
+                        let currentSection = sectionElements[0]?.name;
+
+                        for (const section of sectionElements) {
+                            if (section.element.offsetTop <= scrollPos) {
+                                currentSection = section.name;
+                            }
+                        }
+
+                        // 更新導航列
+                        document.querySelectorAll('.nav-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (item.dataset.section === currentSection) {
+                                item.classList.add('active');
+                            }
+                        });
+
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        }
+
         // ==================== 迭代4: 進階統計分析功能 ====================
 
         // 切換統計標籤頁
@@ -2206,6 +2272,14 @@
                 updateHistoryDisplay();
                 updateSavedDisplay();
                 generateNumbers();
+                initScrollSpy(); // 迭代7: 初始化滾動監聽
+
+                // 迭代8: 註冊 Service Worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(reg => console.log('Service Worker 已註冊'))
+                        .catch(err => console.log('Service Worker 註冊失敗:', err));
+                }
 
                 console.log('智能彩券選號系統 Pro 已初始化完成');
             } catch (error) {
