@@ -26,9 +26,11 @@ LOTTERY_URLS = {
 
 # API Settings
 API_PREFIX = "/api"
+PORT = int(os.environ.get("PORT", 8080))
 CORS_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8080",
     "http://127.0.0.1:5500",
+    "https://jackcanhelp.github.io",
     "null",  # For local file access
 ]
