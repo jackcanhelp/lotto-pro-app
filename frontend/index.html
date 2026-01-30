@@ -1127,7 +1127,6 @@
         <div class="mode-selector">
             <button class="mode-btn active" onclick="switchMode('lotto')">🎰 大樂透</button>
             <button class="mode-btn" onclick="switchMode('power')">💰 威力彩</button>
-            <button class="mode-btn" onclick="switchMode('daily539')">🎯 今彩539</button>
         </div>
 
         <!-- 主標籤頁導航 -->
@@ -1466,7 +1465,6 @@
         // 歷史資料
         let lottoHistory = [];
         let powerHistory = [];
-        let daily539History = [];
 
         // 包牌相關變數
         let wheelingType = 7;
@@ -1542,14 +1540,6 @@
                     { date: '2024/12/17', numbers: [2, 14, 21, 29, 36, 43], special: 16 },
                     { date: '2024/12/13', numbers: [8, 17, 25, 32, 39, 46], special: 11 }
                 ];
-            } else if (gameType === 'daily539') {
-                return [
-                    { date: '2024/12/27', numbers: [5, 12, 21, 28, 35], special: null },
-                    { date: '2024/12/26', numbers: [3, 9, 18, 25, 33], special: null },
-                    { date: '2024/12/25', numbers: [7, 14, 22, 31, 39], special: null },
-                    { date: '2024/12/24', numbers: [2, 11, 19, 27, 36], special: null },
-                    { date: '2024/12/23', numbers: [6, 15, 24, 30, 38], special: null }
-                ];
             } else {
                 return [
                     { date: '2024/12/26', numbers: [5, 12, 18, 27, 33, 38], special: 7 },
@@ -1564,7 +1554,6 @@
         async function loadHistoryData() {
             lottoHistory = await fetchLotteryHistory('lotto');
             powerHistory = await fetchLotteryHistory('power');
-            daily539History = await fetchLotteryHistory('daily539');
         }
 
         // ==================== 主標籤頁切換 ====================
@@ -1577,26 +1566,12 @@
         }
 
         // ==================== 彩券模式切換 ====================
-        function getGameName(mode) {
-            const names = { lotto: '大樂透', power: '威力彩', daily539: '今彩539' };
-            return names[mode] || mode;
-        }
-
-        function getGameConfig(mode) {
-            const configs = {
-                lotto: { maxNum: 49, pickCount: 6, specialMax: 49, cost: 50 },
-                power: { maxNum: 38, pickCount: 6, specialMax: 8, cost: 100 },
-                daily539: { maxNum: 39, pickCount: 5, specialMax: 0, cost: 50 }
-            };
-            return configs[mode] || configs.lotto;
-        }
-
         function switchMode(mode) {
             currentGameMode = mode;
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            document.getElementById('currentMode').textContent = getGameName(mode);
+            document.getElementById('currentMode').textContent = mode === 'lotto' ? '大樂透' : '威力彩';
 
             mustHaveNumbers = [];
             wheelingSelectedNumbers = [];
@@ -1611,16 +1586,16 @@
             document.getElementById('wheelingResults').style.display = 'none';
             document.getElementById('extractResults').style.display = 'none';
 
-            showToast(`✅ 已切換至${getGameName(mode)}模式`);
+            showToast(`✅ 已切換至${mode === 'lotto' ? '大樂透' : '威力彩'}模式`);
         }
 
         // ==================== 智能選號功能 ====================
         function initMustHaveGrid() {
             const grid = document.getElementById('mustHaveGrid');
-            const config = getGameConfig(currentGameMode);
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
 
             grid.innerHTML = '';
-            for (let i = 1; i <= config.maxNum; i++) {
+            for (let i = 1; i <= maxNum; i++) {
                 const wrapper = document.createElement('div');
                 wrapper.innerHTML = `
                     <input type="checkbox" class="number-checkbox" id="num-${i}" value="${i}" onchange="handleMustHaveChange(event)">
@@ -1644,13 +1619,8 @@
             }
         }
 
-        function getHistory(mode) {
-            const histories = { lotto: lottoHistory, power: powerHistory, daily539: daily539History };
-            return histories[mode] || [];
-        }
-
         function calculateHotColdNumbers() {
-            const history = getHistory(currentGameMode);
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
             const frequency = {};
 
             history.forEach(record => {
@@ -1673,7 +1643,8 @@
             const showHotCold = document.getElementById('showHotCold').checked;
             const resultsDiv = document.getElementById('results');
 
-            const config = getGameConfig(currentGameMode);
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+            const specialMax = currentGameMode === 'lotto' ? 49 : 8;
             const { hot, cold, frequency } = calculateHotColdNumbers();
 
             const useHot = document.getElementById('strategyHot').checked;
@@ -1687,23 +1658,20 @@
                 let attempts = 0;
 
                 do {
-                    numbers = generateSingleSet(config.maxNum, config.pickCount, hot, cold, useHot, useCold, useBalanced);
+                    numbers = generateSingleSet(maxNum, hot, cold, useHot, useCold, useBalanced);
                     attempts++;
                 } while (
                     ((excludeConsecutive && hasConsecutive(numbers)) ||
-                    (balanceOddEven && !isBalanced(numbers, config.pickCount)) ||
+                    (balanceOddEven && !isBalanced(numbers)) ||
                     !hasMustHaveNumbers(numbers)) &&
                     attempts < 200
                 );
 
-                // 今彩539 沒有特別號
-                let special = null;
-                if (config.specialMax > 0) {
-                    if (currentGameMode === 'lotto') {
-                        do { special = Math.floor(Math.random() * config.specialMax) + 1; } while (numbers.includes(special));
-                    } else {
-                        special = Math.floor(Math.random() * config.specialMax) + 1;
-                    }
+                let special;
+                if (currentGameMode === 'lotto') {
+                    do { special = Math.floor(Math.random() * specialMax) + 1; } while (numbers.includes(special));
+                } else {
+                    special = Math.floor(Math.random() * specialMax) + 1;
                 }
 
                 displayNumberSet(numbers, special, i + 1, frequency, showHotCold);
@@ -1713,31 +1681,33 @@
             document.getElementById('totalGenerated').textContent = generatedCount;
         }
 
-        function generateSingleSet(maxNum, pickCount, hot, cold, useHot, useCold, useBalanced) {
+        function generateSingleSet(maxNum, hot, cold, useHot, useCold, useBalanced) {
             const numbers = [...mustHaveNumbers];
             const hotNums = hot.map(([num]) => parseInt(num));
             const coldNums = cold.map(([num]) => parseInt(num));
 
             // 策略選號
-            if (useHot && numbers.length < pickCount) {
+            if (useHot && numbers.length < 6) {
                 const available = hotNums.filter(n => !numbers.includes(n));
                 if (available.length > 0) {
                     numbers.push(available[Math.floor(Math.random() * available.length)]);
                 }
             }
 
-            if (useCold && numbers.length < pickCount) {
+            if (useCold && numbers.length < 6) {
                 const available = coldNums.filter(n => !numbers.includes(n));
                 if (available.length > 0) {
                     numbers.push(available[Math.floor(Math.random() * available.length)]);
                 }
             }
 
-            if (useBalanced && numbers.length < pickCount) {
-                const ranges = getBalanceRanges(currentGameMode);
+            if (useBalanced && numbers.length < 6) {
+                const ranges = currentGameMode === 'lotto'
+                    ? [[1, 10], [11, 20], [21, 30], [31, 40], [41, 49]]
+                    : [[1, 8], [9, 16], [17, 24], [25, 32], [33, 38]];
 
                 for (const [min, max] of ranges) {
-                    if (numbers.length >= pickCount) break;
+                    if (numbers.length >= 6) break;
                     if (!numbers.some(n => n >= min && n <= max)) {
                         const rangeNums = [];
                         for (let n = min; n <= max; n++) {
@@ -1751,21 +1721,12 @@
             }
 
             // 隨機補足
-            while (numbers.length < pickCount) {
+            while (numbers.length < 6) {
                 const num = Math.floor(Math.random() * maxNum) + 1;
                 if (!numbers.includes(num)) numbers.push(num);
             }
 
             return numbers.sort((a, b) => a - b);
-        }
-
-        function getBalanceRanges(mode) {
-            const rangeConfigs = {
-                lotto: [[1, 10], [11, 20], [21, 30], [31, 40], [41, 49]],
-                power: [[1, 8], [9, 16], [17, 24], [25, 32], [33, 38]],
-                daily539: [[1, 8], [9, 16], [17, 24], [25, 32], [33, 39]]
-            };
-            return rangeConfigs[mode] || rangeConfigs.lotto;
         }
 
         function hasConsecutive(numbers) {
@@ -1776,12 +1737,8 @@
             return false;
         }
 
-        function isBalanced(numbers, pickCount = 6) {
+        function isBalanced(numbers) {
             const oddCount = numbers.filter(n => n % 2 === 1).length;
-            // 今彩539選5個，允許2-3個奇數；大樂透/威力彩選6個，允許2-4個奇數
-            if (pickCount === 5) {
-                return oddCount >= 2 && oddCount <= 3;
-            }
             return oddCount >= 2 && oddCount <= 4;
         }
 
@@ -1811,10 +1768,7 @@
                 html += `<div class="number-ball">${num.toString().padStart(2, '0')}${indicator}</div>`;
             });
 
-            // 今彩539 沒有特別號
-            if (special !== null) {
-                html += `<div class="number-ball special-ball">${special.toString().padStart(2, '0')}</div>`;
-            }
+            html += `<div class="number-ball special-ball">${special.toString().padStart(2, '0')}</div>`;
             html += `
                 <div style="margin-left: auto; display: flex; gap: 8px;">
                     <button class="save-btn" onclick="saveNumberSet([${numbers}], ${special})">💾</button>
@@ -1827,14 +1781,9 @@
         }
 
         function copyNumbers(numbers, special) {
-            let text;
-            if (currentGameMode === 'daily539') {
-                text = numbers.join(', ');
-            } else if (currentGameMode === 'lotto') {
-                text = `${numbers.join(', ')} 特別號: ${special}`;
-            } else {
-                text = `${numbers.join(', ')} 第二區: ${special}`;
-            }
+            const text = currentGameMode === 'lotto'
+                ? `${numbers.join(', ')} 特別號: ${special}`
+                : `${numbers.join(', ')} 第二區: ${special}`;
 
             navigator.clipboard.writeText(text).then(() => showToast('✅ 已複製到剪貼簿'));
         }
@@ -1857,12 +1806,12 @@
         // ==================== 包牌功能 ====================
         function initWheelingGrid() {
             const grid = document.getElementById('wheelingGrid');
-            const config = getGameConfig(currentGameMode);
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
             const { hot } = calculateHotColdNumbers();
             const hotNums = hot.map(([num]) => parseInt(num));
 
             grid.innerHTML = '';
-            for (let i = 1; i <= config.maxNum; i++) {
+            for (let i = 1; i <= maxNum; i++) {
                 const label = document.createElement('div');
                 label.className = 'wheeling-number-label';
                 if (hotNums.includes(i)) label.classList.add('hot-recommend');
@@ -1919,11 +1868,10 @@
         }
 
         function updateWheelingStats() {
-            const config = getGameConfig(currentGameMode);
-            const pickCount = config.pickCount;
             const count = wheelingSelectedNumbers.length;
-            const combCount = count >= pickCount ? combination(count, pickCount) : 0;
-            const totalCost = combCount * config.cost;
+            const combCount = count >= 6 ? combination(count, 6) : 0;
+            const costPerBet = currentGameMode === 'lotto' ? 50 : 100;
+            const totalCost = combCount * costPerBet;
 
             document.getElementById('wheelingCountBadge').textContent = `已選 ${count} / 需選 ${wheelingType}`;
             document.getElementById('wheelingSelectedCount').textContent = count;
@@ -1931,7 +1879,7 @@
             document.getElementById('wheelingCost').textContent = `NT$${totalCost.toLocaleString()}`;
 
             const generateBtn = document.getElementById('wheelingGenerateBtn');
-            if (count >= wheelingType && count >= pickCount) {
+            if (count >= wheelingType && count >= 6) {
                 generateBtn.disabled = false;
 
                 // 計算篩選後預估數量
@@ -1942,9 +1890,9 @@
                 if ((excludeConsec || balanceOE || sumRange) && combCount <= 5005) {
                     // 只在組數不太多時才預算（避免卡頓）
                     const sorted = [...wheelingSelectedNumbers].sort((a, b) => a - b);
-                    let combos = generateCombinations(sorted, pickCount);
+                    let combos = generateCombinations(sorted, 6);
                     if (excludeConsec) combos = combos.filter(c => !hasConsecutive(c));
-                    if (balanceOE) combos = combos.filter(c => isBalanced(c, pickCount));
+                    if (balanceOE) combos = combos.filter(c => isBalanced(c));
                     if (sumRange) {
                         const minSum = parseInt(document.getElementById('wheelingSumMin').value) || 21;
                         const maxSum = parseInt(document.getElementById('wheelingSumMax').value) || 279;
@@ -1956,7 +1904,7 @@
                 }
             } else {
                 generateBtn.disabled = true;
-                generateBtn.textContent = `🎲 還需選擇 ${Math.max(wheelingType - count, pickCount - count)} 個號碼`;
+                generateBtn.textContent = `🎲 還需選擇 ${Math.max(wheelingType - count, 6 - count)} 個號碼`;
             }
 
             // 更新中獎計算器
@@ -1981,16 +1929,13 @@
         }
 
         function generateWheelingCombinations() {
-            const config = getGameConfig(currentGameMode);
-            const pickCount = config.pickCount;
-
-            if (wheelingSelectedNumbers.length < pickCount) {
-                showToast(`❌ 請至少選擇${pickCount}個號碼`);
+            if (wheelingSelectedNumbers.length < 6) {
+                showToast('❌ 請至少選擇6個號碼');
                 return;
             }
 
             const sorted = [...wheelingSelectedNumbers].sort((a, b) => a - b);
-            let combos = generateCombinations(sorted, pickCount);
+            let combos = generateCombinations(sorted, 6);
             const originalCount = combos.length;
             let filterLog = [];
 
@@ -2008,7 +1953,7 @@
 
             if (balanceOE) {
                 const before = combos.length;
-                combos = combos.filter(c => isBalanced(c, pickCount));
+                combos = combos.filter(c => isBalanced(c));
                 const filtered = before - combos.length;
                 if (filtered > 0) filterLog.push(`奇偶平衡: -${filtered}組`);
             }
@@ -2091,11 +2036,8 @@
 
         function saveWheelingSet(index) {
             const combo = wheelingCombinations[index];
-            const config = getGameConfig(currentGameMode);
-            let special = null;
-            if (config.specialMax > 0) {
-                special = Math.floor(Math.random() * config.specialMax) + 1;
-            }
+            const specialMax = currentGameMode === 'lotto' ? 49 : 8;
+            const special = Math.floor(Math.random() * specialMax) + 1;
 
             savedNumbers.push({
                 id: Date.now() + index,
@@ -2117,17 +2059,13 @@
         }
 
         function saveAllWheeling() {
-            const config = getGameConfig(currentGameMode);
+            const specialMax = currentGameMode === 'lotto' ? 49 : 8;
             wheelingCombinations.forEach((combo, index) => {
-                let special = null;
-                if (config.specialMax > 0) {
-                    special = Math.floor(Math.random() * config.specialMax) + 1;
-                }
                 savedNumbers.push({
                     id: Date.now() + index,
                     mode: currentGameMode,
                     numbers: combo,
-                    special: special,
+                    special: Math.floor(Math.random() * specialMax) + 1,
                     date: new Date().toLocaleDateString('zh-TW'),
                     source: 'wheeling'
                 });
@@ -2138,11 +2076,7 @@
         }
 
         function exportWheelingCSV() {
-            const config = getGameConfig(currentGameMode);
-            const headers = ['組號'];
-            for (let i = 1; i <= config.pickCount; i++) {
-                headers.push(`號碼${i}`);
-            }
+            const headers = ['組號', '號碼1', '號碼2', '號碼3', '號碼4', '號碼5', '號碼6'];
             const rows = wheelingCombinations.map((combo, i) => [i + 1, ...combo]);
 
             const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -2151,7 +2085,7 @@
 
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `包牌_${getGameName(currentGameMode)}_${new Date().toLocaleDateString('zh-TW').replace(/\//g, '')}.csv`;
+            link.download = `包牌_${currentGameMode === 'lotto' ? '大樂透' : '威力彩'}_${new Date().toLocaleDateString('zh-TW').replace(/\//g, '')}.csv`;
             link.click();
 
             showToast('✅ CSV 已下載');
@@ -2165,8 +2099,8 @@
         let newsExtractedNumbers = []; // 儲存新聞提取的號碼
 
         function addOneNumberToWheeling(num) {
-            const config = getGameConfig(currentGameMode);
-            if (num >= 1 && num <= config.maxNum && !wheelingSelectedNumbers.includes(num) && wheelingSelectedNumbers.length < 15) {
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+            if (num >= 1 && num <= maxNum && !wheelingSelectedNumbers.includes(num) && wheelingSelectedNumbers.length < 15) {
                 wheelingSelectedNumbers.push(num);
                 const label = document.querySelector(`#wheelingGrid .wheeling-number-label[data-num="${num}"]`);
                 if (label) label.classList.add('selected');
@@ -2178,13 +2112,13 @@
 
         function quickAddOneHot() {
             const { hot } = calculateHotColdNumbers();
-            const config = getGameConfig(currentGameMode);
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
 
             if (!hot || hot.length === 0) {
                 // 無歷史資料，隨機選一個
                 let attempts = 0;
                 while (attempts < 50) {
-                    const n = Math.floor(Math.random() * config.maxNum) + 1;
+                    const n = Math.floor(Math.random() * maxNum) + 1;
                     if (addOneNumberToWheeling(n)) {
                         showToast(`🔥 +${n}（隨機熱號）`);
                         return;
@@ -2210,12 +2144,12 @@
 
         function quickAddOneCold() {
             const { cold } = calculateHotColdNumbers();
-            const config = getGameConfig(currentGameMode);
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
 
             if (!cold || cold.length === 0) {
                 let attempts = 0;
                 while (attempts < 50) {
-                    const n = Math.floor(Math.random() * config.maxNum) + 1;
+                    const n = Math.floor(Math.random() * maxNum) + 1;
                     if (addOneNumberToWheeling(n)) {
                         showToast(`❄️ +${n}（隨機冷號）`);
                         return;
@@ -2239,8 +2173,10 @@
         }
 
         function quickAddOneBalanced() {
-            const config = getGameConfig(currentGameMode);
-            const ranges = getBalanceRanges(currentGameMode);
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
+            const ranges = currentGameMode === 'lotto'
+                ? [[1, 10], [11, 20], [21, 30], [31, 40], [41, 49]]
+                : [[1, 8], [9, 16], [17, 24], [25, 32], [33, 38]];
 
             // 輪流從各區間選一個
             const rangeIndex = balancedIndex % ranges.length;
@@ -2384,7 +2320,7 @@
         }
 
         function calculateSuggestedSumRange() {
-            const history = getHistory(currentGameMode);
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
 
             if (history.length === 0) {
                 document.getElementById('suggestedSumRange').textContent = '資料載入中...';
@@ -2416,7 +2352,7 @@
 
         function applyLooseSum() {
             // 寬鬆範圍：平均值 ± 2個標準差（約95%的資料）
-            const history = getHistory(currentGameMode);
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
             const sums = history.map(r => r.numbers.reduce((a, b) => a + b, 0));
             const avgSum = sums.reduce((a, b) => a + b, 0) / sums.length;
             const stdDev = Math.sqrt(sums.reduce((acc, val) => acc + Math.pow(val - avgSum, 2), 0) / sums.length);
@@ -2432,7 +2368,7 @@
 
         function applyTightSum() {
             // 精準範圍：平均值 ± 0.5個標準差（約38%的資料）
-            const history = getHistory(currentGameMode);
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
             const sums = history.map(r => r.numbers.reduce((a, b) => a + b, 0));
             const avgSum = sums.reduce((a, b) => a + b, 0) / sums.length;
             const stdDev = Math.sqrt(sums.reduce((acc, val) => acc + Math.pow(val - avgSum, 2), 0) / sums.length);
@@ -2448,13 +2384,11 @@
 
         // ==================== 中獎機率計算器 ====================
         function updateWinCalculation() {
-            const config = getGameConfig(currentGameMode);
-            const pickCount = config.pickCount;
             const selectedCount = wheelingSelectedNumbers.length;
             const resultDiv = document.getElementById('winCalculationResult');
 
-            if (selectedCount < pickCount) {
-                resultDiv.innerHTML = `<div style="color: #6b7280; font-size: 0.9em;">請先選擇至少 ${pickCount} 個號碼...</div>`;
+            if (selectedCount < 6) {
+                resultDiv.innerHTML = `<div style="color: #6b7280; font-size: 0.9em;">請先選擇至少 6 個號碼...</div>`;
                 return;
             }
 
@@ -2462,42 +2396,16 @@
             const remainingInSelection = selectedCount - hitCount; // 選號中但不在開獎主號中的數量
 
             // 計算中 k 個主號的組數
-            function calcWinCount(matchMain, totalPick = 6) {
+            function calcWinCount(matchMain) {
                 if (matchMain > hitCount) return 0;
-                const need = totalPick - matchMain;
+                const need = 6 - matchMain;
                 if (need > remainingInSelection) return 0;
                 return combination(hitCount, matchMain) * combination(remainingInSelection, need);
             }
 
             let html = '';
 
-            if (currentGameMode === 'daily539') {
-                // ===== 今彩539獎項規則 =====
-                html += '<div style="font-weight: 600; color: #059669; margin-bottom: 8px;">🎯 今彩539中獎預估</div>';
-                html += '<table style="width: 100%; font-size: 0.8em; border-collapse: collapse;">';
-                html += '<tr style="background: #d1fae5;"><th style="padding: 5px; border: 1px solid #6ee7b7;">獎項</th><th style="padding: 5px; border: 1px solid #6ee7b7;">條件</th><th style="padding: 5px; border: 1px solid #6ee7b7;">組數</th></tr>';
-
-                const daily539Prizes = [
-                    { name: '頭獎', match: 5, desc: '5個全中' },
-                    { name: '貳獎', match: 4, desc: '4個' },
-                    { name: '參獎', match: 3, desc: '3個' },
-                    { name: '肆獎', match: 2, desc: '2個' },
-                ];
-
-                daily539Prizes.forEach(prize => {
-                    let winCount = calcWinCount(prize.match, 5);
-                    let displayText = winCount > 0 ? `${winCount} 組` : '-';
-
-                    const style = winCount > 0 ? 'font-weight: bold; color: #059669;' : 'color: #9ca3af;';
-                    html += `<tr><td style="padding: 4px; border: 1px solid #d1fae5;">${prize.name}</td>`;
-                    html += `<td style="padding: 4px; border: 1px solid #d1fae5;">${prize.desc}</td>`;
-                    html += `<td style="padding: 4px; border: 1px solid #d1fae5; text-align: center; ${style}">${displayText}</td></tr>`;
-                });
-
-                html += '</table>';
-                html += `<div style="font-size: 0.75em; color: #6b7280; margin-top: 6px;">💡 今彩539 沒有特別號，獎項較簡單</div>`;
-
-            } else if (currentGameMode === 'lotto') {
+            if (currentGameMode === 'lotto') {
                 // ===== 大樂透獎項規則 =====
                 // 特別號：從剩餘43碼中開出，中特別號機率 = (選號數-命中數)/43
                 const specialProb = remainingInSelection / 43;
@@ -2599,7 +2507,7 @@
             }
 
             // 總結
-            const fullCount = combination(selectedCount, pickCount);
+            const fullCount = combination(selectedCount, 6);
             html += `<div style="margin-top: 8px; padding: 8px; background: #f3f4f6; border-radius: 6px; font-size: 0.8em;">`;
             html += `📌 你選了 <strong>${selectedCount}</strong> 碼，共 <strong>${fullCount}</strong> 組。`;
             html += `若開獎號碼有 <strong style="color: #dc2626;">${hitCount}</strong> 個在你的選號中，以上為預估中獎情況。`;
@@ -2764,7 +2672,7 @@
         }
 
         function updateSumAnalysis() {
-            const history = getHistory(currentGameMode);
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
             const container = document.getElementById('sumAnalysis');
 
             if (history.length === 0) {
@@ -2788,12 +2696,14 @@
         }
 
         function updateRangeDistribution() {
-            const history = getHistory(currentGameMode);
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
             const container = document.getElementById('rangeChart');
 
             if (history.length === 0) return;
 
-            const ranges = getBalanceRanges(currentGameMode);
+            const ranges = currentGameMode === 'lotto'
+                ? [[1, 10], [11, 20], [21, 30], [31, 40], [41, 49]]
+                : [[1, 8], [9, 16], [17, 24], [25, 32], [33, 38]];
 
             const rangeCounts = ranges.map(() => 0);
 
@@ -2820,15 +2730,15 @@
         }
 
         function updateMissingValues() {
-            const history = getHistory(currentGameMode);
-            const config = getGameConfig(currentGameMode);
+            const history = currentGameMode === 'lotto' ? lottoHistory : powerHistory;
+            const maxNum = currentGameMode === 'lotto' ? 49 : 38;
             const tbody = document.getElementById('missingTableBody');
 
             if (history.length === 0) return;
 
             const missingData = [];
 
-            for (let num = 1; num <= config.maxNum; num++) {
+            for (let num = 1; num <= maxNum; num++) {
                 let currentMissing = 0;
                 for (let i = 0; i < history.length; i++) {
                     if (history[i].numbers.includes(num)) break;
